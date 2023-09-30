@@ -15,7 +15,16 @@ app.use(express.json());
 app.use('/uploads/videos', express.static('uploads/videos'));
 
 app.use(videoRoutes);
-
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to the api ',
+    usage: {
+      1:'access "/api/videos" to get all videos.',
+      2: '"api/upload" to upload a new video', 
+      3: '"/api/video/examplevideourl.mp4" to get a video'
+    }
+  })
+})
 
 
 
