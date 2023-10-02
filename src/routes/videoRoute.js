@@ -1,9 +1,10 @@
 const express = require('express');
+const router = express.Router()
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const { getVideo, uploadVideo } = require('../controllers/videoController')
+const { getVid, uploadVideo, transcribeAudio} = require('../controllers/videoController')
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -25,7 +26,6 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter});
 
-const router = express.Router();
 
 // Directory where your uploaded videos are stored
 const videoDirectory = 'uploads/'; 
@@ -59,9 +59,26 @@ router.get('/api/videos', (req, res) => {
     }
 });
 
-
-router.get('/api/video/:filename', getVideo);
+router.get('/api/video/:filename', getVid);
 
 router.post('/api/upload',upload.single('video'), uploadVideo);
+
+
+router.post('/api/videos/transcribe', async (req, res) => {
+    try {
+    const { fileUrl, mimeType } = req.body;
+
+    if (!fileUrl || !mimeType) {
+      return res.status(400).json({ error: 'Invalid request data' });
+    }
+
+    const transcriptionResult = await transcribeAudio(fileUrl, mimeType);
+
+    return res.status(200).json({ success: true, transcriptionResult });
+  } catch (error) {
+    return res.status(500).json({ error: 'Transcription failed', details: error.message });
+  }
+});
+
 
 module.exports = router;
